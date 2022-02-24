@@ -1,7 +1,13 @@
 <script>
-	import user from '$lib/data/user.json';
+	import _user from '$lib/data/user.json';
+    import stats from '$lib/data/stats.json';
 
-	console.log(user);
+    const firstStat = stats[stats.length - 1] ?? {user: _user};
+
+    const user = {
+        ..._user,
+        ...firstStat.user
+    }
 </script>
 
 <div class='bg-russian-violet-600'>

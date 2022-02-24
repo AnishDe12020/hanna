@@ -1,58 +1,21 @@
-import {schedule} from '@netlify/functions';
-import fetch from 'node-fetch';
 import fs from 'fs';
+import {getUser, getAllPosts, parse} from './util.js';
 
 const data = JSON.parse(fs.readFileSync('src/lib/data/user.json', 'utf8'));
 console.log('Fetching stats for', data.name);
 
-const POSTS_QUERY = username => (page = 0) => `{
-	user(username: "${username}") {
-		publicationDomain
-		numFollowers
-		publication {
-			posts(page: ${page}) {
-				cuid
-				title
-				type
-				popularity
-				totalReactions
-			}
-		}
-	}
-}`;
-
-async function fetchPaginatedAPI(username, page = 0) {
-	const res = await fetch('https://api.hashnode.com/', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({query: POSTS_QUERY(username)(page)}),
-	});
-
-	const json = await res.json();
-	const posts = json.data.user.publication.posts;
-	const user = json.data.user;
-
-	if (posts.length) {
-		return {
-			posts: [...posts, ...(await fetchPaginatedAPI(username, page + 1)).posts],
-			user
-		};
-	} else {
-		return {posts, user};
-	}
-}
-
 const {username} = data;
-const {posts: morePosts, user} = await fetchPaginatedAPI(username);
+const rawData = {
+    ...await getUser(username),
+    posts: await getAllPosts(username),
+};
+const parsed = parse(rawData);
 
-const prevPosts = JSON.parse(fs.readFileSync('src/lib/data/posts.json', 'utf8'));
+const prevPosts = JSON.parse(fs.readFileSync('src/lib/data/stats.json', 'utf8'));
 
 prevPosts.push({
 	timestamp: new Date().toISOString(),
-	posts: morePosts,
-    user
+    ...parsed
 });
 
-fs.writeFileSync('src/lib/data/posts.json', JSON.stringify(prevPosts));
+fs.writeFileSync('src/lib/data/stats.json', JSON.stringify(prevPosts, null, 2));
