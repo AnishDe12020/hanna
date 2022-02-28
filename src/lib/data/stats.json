@@ -1545,5 +1545,22 @@
       "reactions": null,
       "popularity": 13714.4927
     }
+  },
+  {
+    "timestamp": "2022-02-28T03:19:03.419Z",
+    "user": {
+      "publicationDomain": null,
+      "numFollowers": 0,
+      "numFollowing": 3,
+      "numPosts": 3,
+      "numReactions": null
+    },
+    "stats": {
+      "followers": 0,
+      "following": 3,
+      "posts": 3,
+      "reactions": null,
+      "popularity": 13714.4927
+    }
   }
 ]
